@@ -1,7 +1,8 @@
 import streamlit as st
 import schedule
 import time
-from auth import login, signup 
+from auth import login, signup
+from sms_sender import send_sms 
 
 def job_preferences():
     st.title(f"Job Notification Preferences (Logged in as {st.session_state['username']})")
@@ -15,6 +16,11 @@ def job_preferences():
         "Select how you want to receive job notifications:",
         ["Gmail", "Message"]
     )
+
+    if notification_type == "Gmail":
+        contact_info = st.text_input("Enter your Gmail address", "")
+    else:
+        contact_info = st.text_input("Enter your phone number", "")
 
     job_type = st.text_input("Enter the type of job you're looking for:", "Software Engineer")
     num_jobs = st.slider("How many jobs would you like to receive?", 1, 50, 5)
@@ -31,18 +37,28 @@ def job_preferences():
 
     frequency_in_minutes = frequency_map[frequency]
 
-    st.write(f"You'll receive {num_jobs} {job_type} jobs from {website} via {notification_type}, {frequency.lower()}.")
+    st.write(f"You'll receive {num_jobs} {job_type} jobs from {website} via {notification_type} to {contact_info}.")
 
-    def fetch_jobs(job_type, num_jobs, website, notification_type):
+    def fetch_jobs(job_type, num_jobs, website, notification_type, contact_info):
         st.write(f"Fetching {num_jobs} jobs for '{job_type}' from {website}...")
         time.sleep(2)
         st.write(f"{num_jobs} new {job_type} jobs from {website} received!")
+
+        if notification_type == "Message":
+            try:
+                message_body = f"{num_jobs} new {job_type} jobs from {website}"
+                sms_sid = send_sms(contact_info, message_body)
+                st.success(f"SMS sent successfully! (SID: {sms_sid})")
+            except Exception as e:
+                st.error(f"Failed to send SMS: {e}")
+        else:
+            st.write(f"Sending job notifications to {contact_info} via Gmail...")
 
     if st.button("Start Job Notifications"):
         st.write("Job notifications started!")
 
         def scheduled_job():
-            fetch_jobs(job_type, num_jobs, website, notification_type)
+            fetch_jobs(job_type, num_jobs, website, notification_type, contact_info)
 
         schedule.every(frequency_in_minutes).minutes.do(scheduled_job)
 
