@@ -16,37 +16,44 @@ class JobsSpider(scrapy.Spider):
 
     fetched_jobs_file = 'fetched_jobs.json'
     
-    def load_fetched_jobs(self):
+    last_fetched_job_file = 'last_fetched_job.json'
+
+    def load_last_fetched_job(self):
+        """Load the last fetched job link from the JSON file."""
         try:
-            with open(self.fetched_jobs_file, 'r') as file:
-                self.log(f"Loading fetched jobs from {self.fetched_jobs_file}")
-                return set(json.load(file))
-        except FileNotFoundError:
-            self.log(f"No fetched jobs file found: {self.fetched_jobs_file}")
-            return set()
-        
-    def save_fetched_jobs(self, fetched_jobs):
-        with open(self.fetched_jobs_file, 'w') as file:
-            json.dump(list(fetched_jobs), file)
-        self.log(f"Saved fetched jobs to {self.fetched_jobs_file}")
-    
+            with open(self.last_fetched_job_file, 'r') as file:
+                self.log(f"Loading last fetched job from {self.last_fetched_job_file}")
+                return json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.log(f"No valid last fetched job file found, starting fresh.")
+            return None
+
+    def save_last_fetched_job(self, last_job_link):
+        """Save the last fetched job link to the JSON file."""
+        with open(self.last_fetched_job_file, 'w') as file:
+            json.dump(last_job_link, file)
+        self.log(f"Saved last fetched job: {last_job_link}")
+
     def parse(self, response):
-        fetched_jobs = self.load_fetched_jobs()
-        new_fetched_jobs = set()
-        
+        last_fetched_job = self.load_last_fetched_job()
+
         if response.status == 200:
             rows = response.xpath('//div[@class="regularEntries"]//table[@id="job_list_table"]/tr')[1:]
 
+            new_last_fetched_job = None
             for row in rows:
-                jobsge_item = JobsgeItem() 
                 job_link = response.urljoin(row.xpath('td[2]/a/@href').get())
-                
-                # Skip jobs already fetched
-                if job_link in fetched_jobs:
-                    self.log(f"Job already fetched: {job_link}")
-                    continue
-                
-    
+
+                # Stop parsing once we hit the last fetched job
+                if job_link == last_fetched_job:
+                    self.log(f"Reached last fetched job: {job_link}. Stopping.")
+                    break
+
+                # Set the first job as the new "last fetched job"
+                if not new_last_fetched_job:
+                    new_last_fetched_job = job_link
+
+                # Collect job data
                 jobsge_item = JobsgeItem(
                     position=row.xpath('td[2]/a/text()').get(default='').strip(),
                     company=row.xpath('td[4]/a/text()').get(default='').strip(),
@@ -55,16 +62,9 @@ class JobsSpider(scrapy.Spider):
                     details_link=job_link
                 )
 
-                yield jobsge_item  
+                yield jobsge_item  # Yield the job item for output
                 self.log(f"Fetched job: {job_link}")
-                new_fetched_jobs.add(job_link)
-            self.update_fetched_jobs(fetched_jobs, new_fetched_jobs)
 
-    # Save new fetched jobs
-    def update_fetched_jobs(self, fetched_jobs, new_fetched_jobs):
-        if new_fetched_jobs:
-            fetched_jobs.update(new_fetched_jobs)
-            self.save_fetched_jobs(fetched_jobs)
-            self.log(f"New jobs added: {len(new_fetched_jobs)}, Total fetched jobs: {len(fetched_jobs)}")
-             
-   
+            # Save the new last fetched job link (if new jobs were fetched)
+            if new_last_fetched_job:
+                self.save_last_fetched_job(new_last_fetched_job)
