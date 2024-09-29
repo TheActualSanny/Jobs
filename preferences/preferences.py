@@ -1,11 +1,13 @@
 import streamlit as st
 import schedule
 import time
-from sms_sender import send_sms  
-from mail_sender import send_email_notification
-from auth import login, signup
+from services.sms_sender import send_sms  
+from services.mail_sender import send_email_notification
+from auth.auth import login, signup
 from dataclasses import dataclass, field
-from enums import NotificationType, Website, Frequency  
+from .enums import NotificationType, Website, Frequency  
+
+
 
 @dataclass
 class JobPreferences:

@@ -1,6 +1,5 @@
 import streamlit as st
-
-from preferences import handle_job_preferences, handle_auth
+from preferences.preferences import handle_job_preferences, handle_auth
 
 def main():
     if 'logged_in' not in st.session_state:
@@ -17,8 +16,7 @@ def main():
         if st.button("Logout", key="logout_button"):
             st.session_state['logged_in'] = False
             st.session_state['username'] = ''
-            st.experimental_rerun()
-
+            st.rerun()  
 
 if __name__ == "__main__":
     main()
