@@ -1,14 +1,20 @@
 import hashlib
 import psycopg2
 import streamlit as st
+import psycopg2
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def get_connection():
     return psycopg2.connect(
-        host="localhost",
-        database="streamlit_auth_db",
-        user="postgres",
-        password="postgres"
+        host=os.getenv('DB_HOST'),
+        database=os.getenv('DB_NAME'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD')
     )
+
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
