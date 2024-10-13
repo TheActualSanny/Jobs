@@ -9,15 +9,15 @@ class Website(Enum):
     HR_GE = "hr.ge"
 
 class Frequency(Enum):
-    EVERY_MINUTE = "Every minute"
-    EVERY_HOUR = "Every hour"
-    ONCE_A_DAY = "Once a day"
-
+    DAILY = "Daily"
+    WEEKLY = "Weekly"
+    MONTHLY = "Monthly"
+    
     @classmethod
     def to_minutes(cls, frequency):
         frequency_map = {
-            cls.EVERY_MINUTE: 1,
-            cls.EVERY_HOUR: 60,
-            cls.ONCE_A_DAY: 1440,
+            cls.DAILY: 1440,   
+            cls.WEEKLY: 10080, 
+            cls.MONTHLY: 43200
         }
-        return frequency_map[frequency]
+        return frequency_map.get(frequency, None) 

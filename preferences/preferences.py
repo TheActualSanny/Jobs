@@ -44,7 +44,7 @@ class JobPreferences:
     def select_frequency(self):
         frequency_choice = st.selectbox(
             "How often do you want to receive job notifications?",
-            [Frequency.EVERY_MINUTE.value, Frequency.EVERY_HOUR.value, Frequency.ONCE_A_DAY.value]
+            [Frequency.DAILY.value, Frequency.WEEKLY.value, Frequency.MONTHLY.value]
         )
         self.frequency = Frequency(frequency_choice)
         self.frequency_in_minutes = Frequency.to_minutes(self.frequency)
