@@ -8,6 +8,7 @@ class Website(Enum):
     JOBS_GE = "jobs.ge"
     HR_GE = "hr.ge"
     QUANTORI = "quantori.com"
+    DATAART = 'dataart.com'
 
 class Frequency(Enum):
     DAILY = "Daily"

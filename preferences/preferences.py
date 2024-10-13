@@ -23,7 +23,7 @@ class JobPreferences:
     def select_websites(self):
         self.websites = st.multiselect(
             "Select the websites to fetch jobs from:",
-            [Website.JOBS_GE.value, Website.HR_GE.value, Website.QUANTORI.value]
+            [Website.JOBS_GE.value, Website.HR_GE.value, Website.QUANTORI.value, Website.DATAART.value]
         )
 
     def select_notification_type(self):
