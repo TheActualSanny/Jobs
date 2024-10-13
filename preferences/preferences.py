@@ -25,7 +25,7 @@ class JobPreferences:
     def select_website(self):
         self.website = st.selectbox(
             "Select the website to fetch jobs from:",
-            [Website.JOBS_GE.value, Website.HR_GE.value]
+            [Website.JOBS_GE.value, Website.HR_GE.value, Website.QUANTORI.value]
         )
 
     def select_notification_type(self):
